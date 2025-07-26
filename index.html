@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 PHYSICS GALAXY - 超絶リアルな3D物理シミュレーション</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="universe-container">
+        <!-- 星空背景 -->
+        <div class="starfield">
+            <div class="stars"></div>
+            <div class="twinkling"></div>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="main-interface">
+            <header class="game-header">
+                <h1 class="game-title">
+                    <span class="physics-text">PHYSICS</span>
+                    <span class="galaxy-text">GALAXY</span>
+                </h1>
+                <p class="subtitle">超絶リアルな3D物理シミュレーション</p>
+            </header>
+
+            <div class="simulation-workspace">
+                <!-- 3Dキャンバス -->
+                <div class="canvas-container">
+                    <canvas id="mainCanvas" width="800" height="600"></canvas>
+                    
+                    <!-- オーバーレイUI -->
+                    <div class="canvas-overlay">
+                        <div class="fps-counter">
+                            <span>FPS: </span>
+                            <span id="fpsDisplay">60</span>
+                        </div>
+                        
+                        <div class="simulation-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Objects:</span>
+                                <span id="objectCount">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Gravity:</span>
+                                <span id="gravityDisplay">9.8</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Energy:</span>
+                                <span id="totalEnergy">0</span>
+                            </div>
+                        </div>
+
+                        <div class="interaction-hints">
+                            <div class="hint-item">
+                                <span class="hint-key">Click</span>
+                                <span class="hint-action">Create Object</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-key">Drag</span>
+                                <span class="hint-action">Apply Force</span>
+                            </div>
+                            <div class="hint-item">
+                                <span class="hint-key">Wheel</span>
+                                <span class="hint-action">Zoom</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- コントロールパネル -->
+                <div class="control-panel">
+                    <!-- 物理設定 -->
+                    <div class="panel-section physics-controls">
+                        <h3 class="section-title">物理設定</h3>
+                        
+                        <div class="control-group">
+                            <label for="gravitySlider">重力</label>
+                            <input type="range" id="gravitySlider" min="0" max="50" value="9.8" step="0.1">
+                            <span id="gravityValue">9.8</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="frictionSlider">摩擦係数</label>
+                            <input type="range" id="frictionSlider" min="0" max="1" value="0.3" step="0.01">
+                            <span id="frictionValue">0.3</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="restitutionSlider">反発係数</label>
+                            <input type="range" id="restitutionSlider" min="0" max="1" value="0.8" step="0.01">
+                            <span id="restitutionValue">0.8</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="airResistanceSlider">空気抵抗</label>
+                            <input type="range" id="airResistanceSlider" min="0" max="0.1" value="0.01" step="0.001">
+                            <span id="airResistanceValue">0.01</span>
+                        </div>
+                    </div>
+
+                    <!-- オブジェクト作成 -->
+                    <div class="panel-section object-controls">
+                        <h3 class="section-title">オブジェクト作成</h3>
+                        
+                        <div class="object-types">
+                            <button class="object-btn active" data-type="sphere">
+                                <div class="btn-icon">🟢</div>
+                                <span>球体</span>
+                            </button>
+                            <button class="object-btn" data-type="cube">
+                                <div class="btn-icon">🟦</div>
+                                <span>立方体</span>
+                            </button>
+                            <button class="object-btn" data-type="cylinder">
+                                <div class="btn-icon">🔵</div>
+                                <span>円柱</span>
+                            </button>
+                            <button class="object-btn" data-type="chain">
+                                <div class="btn-icon">⛓️</div>
+                                <span>チェーン</span>
+                            </button>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="sizeSlider">サイズ</label>
+                            <input type="range" id="sizeSlider" min="0.5" max="5" value="1" step="0.1">
+                            <span id="sizeValue">1.0</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="massSlider">質量</label>
+                            <input type="range" id="massSlider" min="0.1" max="10" value="1" step="0.1">
+                            <span id="massValue">1.0</span>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="materialSelect">材質</label>
+                            <select id="materialSelect">
+                                <option value="metal">金属</option>
+                                <option value="rubber">ゴム</option>
+                                <option value="glass">ガラス</option>
+                                <option value="wood">木材</option>
+                                <option value="ice">氷</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- シミュレーション制御 -->
+                    <div class="panel-section simulation-controls">
+                        <h3 class="section-title">シミュレーション制御</h3>
+                        
+                        <div class="control-buttons">
+                            <button id="playBtn" class="control-btn primary">
+                                <span class="btn-icon">▶</span>
+                                <span>開始</span>
+                            </button>
+                            <button id="pauseBtn" class="control-btn">
+                                <span class="btn-icon">⏸</span>
+                                <span>一時停止</span>
+                            </button>
+                            <button id="resetBtn" class="control-btn">
+                                <span class="btn-icon">🔄</span>
+                                <span>リセット</span>
+                            </button>
+                            <button id="clearBtn" class="control-btn danger">
+                                <span class="btn-icon">🗑</span>
+                                <span>全削除</span>
+                            </button>
+                        </div>
+
+                        <div class="control-group">
+                            <label for="speedSlider">シミュレーション速度</label>
+                            <input type="range" id="speedSlider" min="0.1" max="3" value="1" step="0.1">
+                            <span id="speedValue">1.0x</span>
+                        </div>
+
+                        <div class="toggle-group">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="showTrailsToggle" checked>
+                                <span class="toggle-slider"></span>
+                                軌跡表示
+                            </label>
+                            <label class="toggle-label">
+                                <input type="checkbox" id="showVelocityToggle">
+                                <span class="toggle-slider"></span>
+                                速度ベクトル
+                            </label>
+                            <label class="toggle-label">
+                                <input type="checkbox" id="showForcesToggle">
+                                <span class="toggle-slider"></span>
+                                力の表示
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- プリセットシナリオ -->
+                    <div class="panel-section scenario-controls">
+                        <h3 class="section-title">プリセットシナリオ</h3>
+                        
+                        <div class="scenario-list">
+                            <button class="scenario-btn" data-scenario="gravity">
+                                <div class="scenario-icon">🍎</div>
+                                <div class="scenario-info">
+                                    <span class="scenario-name">重力実験</span>
+                                    <span class="scenario-desc">ニュートンの法則</span>
+                                </div>
+                            </button>
+                            
+                            <button class="scenario-btn" data-scenario="pendulum">
+                                <div class="scenario-icon">⚖️</div>
+                                <div class="scenario-info">
+                                    <span class="scenario-name">振り子</span>
+                                    <span class="scenario-desc">周期運動</span>
+                                </div>
+                            </button>
+                            
+                            <button class="scenario-btn" data-scenario="collision">
+                                <div class="scenario-icon">💥</div>
+                                <div class="scenario-info">
+                                    <span class="scenario-name">衝突実験</span>
+                                    <span class="scenario-desc">運動量保存</span>
+                                </div>
+                            </button>
+                            
+                            <button class="scenario-btn" data-scenario="orbital">
+                                <div class="scenario-icon">🌍</div>
+                                <div class="scenario-info">
+                                    <span class="scenario-name">軌道運動</span>
+                                    <span class="scenario-desc">万有引力</span>
+                                </div>
+                            </button>
+                            
+                            <button class="scenario-btn" data-scenario="spring">
+                                <div class="scenario-icon">🌀</div>
+                                <div class="scenario-info">
+                                    <span class="scenario-name">バネ振動</span>
+                                    <span class="scenario-desc">フックの法則</span>
+                                </div>
+                            </button>
+                            
+                            <button class="scenario-btn" data-scenario="fluid">
+                                <div class="scenario-icon">🌊</div>
+                                <div class="scenario-info">
+                                    <span class="scenario-name">流体力学</span>
+                                    <span class="scenario-desc">浮力・粘性</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 詳細情報パネル -->
+        <div class="info-panel" id="infoPanel">
+            <div class="panel-header">
+                <h3>オブジェクト詳細</h3>
+                <button class="close-btn" id="closePanelBtn">×</button>
+            </div>
+            <div class="panel-content">
+                <div class="info-group">
+                    <label>位置 (x, y, z)</label>
+                    <div class="vector-display" id="positionVector">0, 0, 0</div>
+                </div>
+                <div class="info-group">
+                    <label>速度 (vx, vy, vz)</label>
+                    <div class="vector-display" id="velocityVector">0, 0, 0</div>
+                </div>
+                <div class="info-group">
+                    <label>加速度 (ax, ay, az)</label>
+                    <div class="vector-display" id="accelerationVector">0, 0, 0</div>
+                </div>
+                <div class="info-group">
+                    <label>運動エネルギー</label>
+                    <div class="energy-display" id="kineticEnergy">0 J</div>
+                </div>
+                <div class="info-group">
+                    <label>位置エネルギー</label>
+                    <div class="energy-display" id="potentialEnergy">0 J</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ヘルプオーバーレイ -->
+        <div class="help-overlay" id="helpOverlay">
+            <div class="help-content">
+                <h2>Physics Galaxy ヘルプ</h2>
+                <div class="help-sections">
+                    <div class="help-section">
+                        <h3>基本操作</h3>
+                        <ul>
+                            <li><strong>左クリック:</strong> オブジェクト作成</li>
+                            <li><strong>右クリック:</strong> オブジェクト選択</li>
+                            <li><strong>ドラッグ:</strong> 力を加える</li>
+                            <li><strong>マウスホイール:</strong> ズーム</li>
+                            <li><strong>中ボタンドラッグ:</strong> 視点回転</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h3>物理法則</h3>
+                        <ul>
+                            <li><strong>重力:</strong> F = mg</li>
+                            <li><strong>摩擦:</strong> F = μN</li>
+                            <li><strong>反発:</strong> e = (v₂-v₁)/(u₁-u₂)</li>
+                            <li><strong>空気抵抗:</strong> F = ½ρv²CdA</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h3>エネルギー</h3>
+                        <ul>
+                            <li><strong>運動エネルギー:</strong> KE = ½mv²</li>
+                            <li><strong>位置エネルギー:</strong> PE = mgh</li>
+                            <li><strong>弾性エネルギー:</strong> SE = ½kx²</li>
+                        </ul>
+                    </div>
+                </div>
+                <button id="closeHelpBtn" class="help-close-btn">閉じる</button>
+            </div>
+        </div>
+
+        <!-- ヘルプボタン -->
+        <button class="help-btn" id="helpBtn">?</button>
+    </div>
+
+    <!-- サウンドコンテナ -->
+    <div id="audioContainer" style="display: none;"></div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
